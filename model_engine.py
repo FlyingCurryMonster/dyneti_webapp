@@ -66,12 +66,12 @@ if __name__ == "__main__":
     model_engine = ModelEngine()
     # test cat image output
     
-    input = model_engine.preprocess_input('./cat.jpg')
+    input = model_engine.preprocess_input('./test_images/cat.jpg')
     output = model_engine.predict(input)
     print(f"Cat probability: {output[0][0]:.4f}")
 
     # test dog image output
-    input = model_engine.preprocess_input('./dog2.webp')
+    input = model_engine.preprocess_input('./test_images/dog2.webp')
     output = model_engine.predict(input)
     print(f"Cat probability: {output[0][0]:.4f}")
 

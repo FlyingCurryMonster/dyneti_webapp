@@ -24,13 +24,13 @@ def hello():
 @app.route("/test_model_engine")
 def test_model_engine():
     # test cat image output
-    cat_input = model.preprocess_input('./cat.jpg')
+    cat_input = model.preprocess_input('./test_images/cat.jpg')
     cat_output = model.predict(cat_input)
 
-    dog_input = model.preprocess_input('./dog2.webp')
+    dog_input = model.preprocess_input('./test_images/dog2.webp')
     dog_output = model.predict(dog_input)
 
-    ithaca_cat_input = model.preprocess_input('./ithaca_cat.jpg')
+    ithaca_cat_input = model.preprocess_input('./test_images/ithaca_cat.jpg')
     ithaca_cat_output = model.predict(ithaca_cat_input)
     return jsonify({
         "cat image cat_probability": float(cat_output[0][0]),
