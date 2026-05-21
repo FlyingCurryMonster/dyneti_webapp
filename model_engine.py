@@ -1,14 +1,7 @@
 MODEL_PATH = './model.tflite'
 
-import os
-
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
-os.environ["MPLCONFIGDIR"] = "/tmp"
-import warnings
-warnings.filterwarnings("ignore", message=".*tf.lite.Interpreter is deprecated.*")
 import numpy as np
-from tensorflow import lite as tf_lite
+from tflite_runtime.interpreter import Interpreter
 from PIL import Image
 
 class ModelEngine:
@@ -39,7 +32,7 @@ class ModelEngine:
 
     def load_model(self):
         # Load TFLite model and allocate tensors.
-        interpreter = tf_lite.Interpreter(model_path=self.model_path)
+        interpreter = Interpreter(model_path=self.model_path)
         interpreter.allocate_tensors()
         return interpreter
     
