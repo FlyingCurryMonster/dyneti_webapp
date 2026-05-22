@@ -2,3 +2,6 @@
 *.vscode
 __pycache__/
 .rcloneignore
+instance/
+*.sqlite
+*.db
