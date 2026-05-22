@@ -1,7 +1,7 @@
 import sqlite3
 from pathlib import Path
 
-DATABASE_PATH = Path("./webapp.sqlite")
+DATABASE_PATH = Path("instance/webapp.sqlite")
 
 
 def create_webapp_response_table(connection):
