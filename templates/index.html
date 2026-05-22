@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cat vs Dog Classifier</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="camera-panel" aria-labelledby="page-title">
+      <div class="header-row">
+        <div>
+          <h1 id="page-title">Cat vs Dog Classifier</h1>
+          <p class="subtitle">Use your webcam to capture an image and send it to the model.</p>
+        </div>
+        <span id="status" class="status-pill">Camera off</span>
+      </div>
+
+      <div class="preview-grid">
+        <div class="preview-box">
+          <video id="camera" autoplay playsinline muted></video>
+          <p id="camera-placeholder" class="placeholder-text">Start the camera to preview the image.</p>
+        </div>
+
+        <div class="preview-box">
+          <canvas id="snapshot"></canvas>
+          <p id="snapshot-placeholder" class="placeholder-text">Captured photo appears here.</p>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="start-camera" type="button">Start camera</button>
+        <button id="capture-photo" type="button" disabled>Capture photo</button>
+        <button id="submit-photo" type="button" disabled>Submit prediction</button>
+      </div>
+
+      <section id="result" class="result-box" aria-live="polite">
+        <h2>Prediction</h2>
+        <p id="prediction-text">No prediction yet.</p>
+        <p id="probability-text" class="probability-text"></p>
+      </section>
+    </section>
+  </main>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
