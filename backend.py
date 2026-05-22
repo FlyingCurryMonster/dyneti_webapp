@@ -1,5 +1,5 @@
 from io import BytesIO
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from model_engine import ModelEngine, MODEL_PATH
 from webapp_db import ensure_webapp_response_table_exists, save_webapp_response
 
@@ -7,6 +7,11 @@ app = Flask(__name__)
 model = ModelEngine(MODEL_PATH)
 
 THRESHOLD = 0.95
+
+
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 
 @app.route("/predict", methods=["POST"])
