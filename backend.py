@@ -6,6 +6,25 @@ from flask import Flask, request, jsonify, render_template
 from model_engine import ModelEngine
 from webapp_db import ensure_webapp_response_table_exists, save_webapp_response
 
+REQUIRED_ENV_VARS = (
+    "DYNETI_DATABASE_PATH",
+    "DYNETI_MODEL_PATH",
+    "DYNETI_TEST_IMAGES_PATH",
+    "DYNETI_HOST",
+    "DYNETI_PORT",
+    "DYNETI_DEBUG",
+    "DYNETI_CAT_THRESHOLD",
+)
+
+
+def assert_required_env_vars():
+    missing_vars = [var_name for var_name in REQUIRED_ENV_VARS if var_name not in os.environ]
+    if missing_vars:
+        raise RuntimeError(f"Missing required environment variables: {', '.join(missing_vars)}")
+
+
+assert_required_env_vars()
+
 DATABASE_PATH = Path(os.environ["DYNETI_DATABASE_PATH"])
 MODEL_PATH = Path(os.environ["DYNETI_MODEL_PATH"])
 TEST_IMAGES_PATH = Path(os.environ["DYNETI_TEST_IMAGES_PATH"])
