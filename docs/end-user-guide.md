@@ -24,3 +24,20 @@ The possible outputs are
 
 This app saves each submitted image and prediction result in a local SQLite
 database on the machine running the app.
+
+## Troubleshooting
+
+If the camera does not start, check that the browser has permission to use the
+camera.
+
+If the page shows `Camera blocked`, use the browser's site settings to allow
+camera access, then reload the page.
+
+If prediction fails, make sure the web app is still running in the terminal.
+
+If the browser cannot open the page, make sure the address matches the host and
+port in `config.toml`. With the current default settings, the address is:
+
+```text
+http://127.0.0.1:5000
+```
