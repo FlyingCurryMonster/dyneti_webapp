@@ -1,37 +1,23 @@
 from io import BytesIO
-import os
 from pathlib import Path
+import tomllib
 
 from flask import Flask, request, jsonify, render_template
 from model_engine import ModelEngine
 from webapp_db import ensure_webapp_response_table_exists, save_webapp_response
 
-REQUIRED_ENV_VARS = (
-    "DYNETI_DATABASE_PATH",
-    "DYNETI_MODEL_PATH",
-    "DYNETI_TEST_IMAGES_PATH",
-    "DYNETI_HOST",
-    "DYNETI_PORT",
-    "DYNETI_DEBUG",
-    "DYNETI_CAT_THRESHOLD",
-)
+PROJECT_ROOT = Path(__file__).resolve().parent
 
+with (PROJECT_ROOT / "config.toml").open("rb") as config_file:
+    CONFIG = tomllib.load(config_file)
 
-def assert_required_env_vars():
-    missing_vars = [var_name for var_name in REQUIRED_ENV_VARS if var_name not in os.environ]
-    if missing_vars:
-        raise RuntimeError(f"Missing required environment variables: {', '.join(missing_vars)}")
-
-
-assert_required_env_vars()
-
-DATABASE_PATH = Path(os.environ["DYNETI_DATABASE_PATH"])
-MODEL_PATH = Path(os.environ["DYNETI_MODEL_PATH"])
-TEST_IMAGES_PATH = Path(os.environ["DYNETI_TEST_IMAGES_PATH"])
-HOST = os.environ["DYNETI_HOST"]
-PORT = int(os.environ["DYNETI_PORT"])
-DEBUG = os.environ["DYNETI_DEBUG"].strip().lower() in {"1", "true", "yes", "on"}
-THRESHOLD = float(os.environ["DYNETI_CAT_THRESHOLD"])
+DATABASE_PATH = (PROJECT_ROOT / CONFIG["paths"]["database"]).resolve()
+MODEL_PATH = (PROJECT_ROOT / CONFIG["paths"]["model"]).resolve()
+TEST_IMAGES_PATH = (PROJECT_ROOT / CONFIG["paths"]["test_images"]).resolve()
+HOST = CONFIG["server"]["host"]
+PORT = int(CONFIG["server"]["port"])
+DEBUG = bool(CONFIG["server"]["debug"])
+THRESHOLD = float(CONFIG["prediction"]["cat_threshold"])
 
 app = Flask(__name__)
 model = ModelEngine(str(MODEL_PATH))

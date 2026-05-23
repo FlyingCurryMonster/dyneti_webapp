@@ -61,11 +61,15 @@ class ModelEngine:
         return img_array
     
 if __name__ == "__main__":
-    import os
     from pathlib import Path
+    import tomllib
 
-    model_path = Path(os.environ["DYNETI_MODEL_PATH"])
-    test_images_path = Path(os.environ["DYNETI_TEST_IMAGES_PATH"])
+    project_root = Path(__file__).resolve().parent
+    with (project_root / "config.toml").open("rb") as config_file:
+        config = tomllib.load(config_file)
+
+    model_path = (project_root / config["paths"]["model"]).resolve()
+    test_images_path = (project_root / config["paths"]["test_images"]).resolve()
     model_engine = ModelEngine(str(model_path))
     # test cat image output
     

@@ -1,0 +1,12 @@
+[paths]
+database = "instance/webapp.sqlite"
+model = "model.tflite"
+test_images = "test_images"
+
+[server]
+host = "127.0.0.1"
+port = 5000
+debug = false
+
+[prediction]
+cat_threshold = 0.975
