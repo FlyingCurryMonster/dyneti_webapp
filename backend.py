@@ -1,12 +1,21 @@
 from io import BytesIO
+import os
+from pathlib import Path
+
 from flask import Flask, request, jsonify, render_template
-from model_engine import ModelEngine, MODEL_PATH
+from model_engine import ModelEngine
 from webapp_db import ensure_webapp_response_table_exists, save_webapp_response
 
-app = Flask(__name__)
-model = ModelEngine(MODEL_PATH)
+DATABASE_PATH = Path(os.environ["DYNETI_DATABASE_PATH"])
+MODEL_PATH = Path(os.environ["DYNETI_MODEL_PATH"])
+TEST_IMAGES_PATH = Path(os.environ["DYNETI_TEST_IMAGES_PATH"])
+HOST = os.environ["DYNETI_HOST"]
+PORT = int(os.environ["DYNETI_PORT"])
+DEBUG = os.environ["DYNETI_DEBUG"].strip().lower() in {"1", "true", "yes", "on"}
+THRESHOLD = float(os.environ["DYNETI_CAT_THRESHOLD"])
 
-THRESHOLD = 0.95
+app = Flask(__name__)
+model = ModelEngine(str(MODEL_PATH))
 
 
 @app.route("/")
@@ -32,7 +41,7 @@ def predict():
     else:
         message = "I can't tell if this image is a cat or a dog with high confidence"
     
-    save_webapp_response(image_bytes, image.filename, image.content_type, cat_probability, message)
+    save_webapp_response(image_bytes, image.filename, image.content_type, cat_probability, message, DATABASE_PATH)
     
     return jsonify({"cat_probability": float(output[0][0]), "prediction": message})
 
@@ -44,13 +53,13 @@ def hello():
 @app.route("/test_model_engine")
 def test_model_engine():
     # test cat image output
-    cat_input = model.preprocess_input('./test_images/cat.jpg')
+    cat_input = model.preprocess_input(TEST_IMAGES_PATH / "cat.jpg")
     cat_output = model.predict(cat_input)
 
-    dog_input = model.preprocess_input('./test_images/dog2.webp')
+    dog_input = model.preprocess_input(TEST_IMAGES_PATH / "dog2.webp")
     dog_output = model.predict(dog_input)
 
-    ithaca_cat_input = model.preprocess_input('./test_images/ithaca_cat.jpg')
+    ithaca_cat_input = model.preprocess_input(TEST_IMAGES_PATH / "ithaca_cat.jpg")
     ithaca_cat_output = model.predict(ithaca_cat_input)
     return jsonify({
         "cat image cat_probability": float(cat_output[0][0]),
@@ -65,5 +74,9 @@ def health():
 # sink to database
 
 if __name__ == "__main__":
-    ensure_webapp_response_table_exists()
-    app.run(debug=True)
+    ensure_webapp_response_table_exists(DATABASE_PATH)
+    app.run(
+        host=HOST,
+        port=PORT,
+        debug=DEBUG,
+    )

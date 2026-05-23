@@ -1,8 +1,6 @@
 import sqlite3
 from pathlib import Path
 
-DATABASE_PATH = Path("instance/webapp.sqlite")
-
 
 def create_webapp_response_table(connection):
     connection.execute(
@@ -21,14 +19,14 @@ def create_webapp_response_table(connection):
     connection.commit()
 
 
-def ensure_webapp_response_table_exists(db_path=DATABASE_PATH):
+def ensure_webapp_response_table_exists(db_path):
     db_path = Path(db_path)
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
     with sqlite3.connect(db_path) as connection:
         create_webapp_response_table(connection)
 
-def save_webapp_response(image_bytes, filename, content_type, cat_probability, prediction, db_path=DATABASE_PATH):
+def save_webapp_response(image_bytes, filename, content_type, cat_probability, prediction, db_path):
     ensure_webapp_response_table_exists(db_path)
 
     with sqlite3.connect(db_path) as connection:
@@ -40,5 +38,3 @@ def save_webapp_response(image_bytes, filename, content_type, cat_probability, p
             (image_bytes, filename, content_type, cat_probability, prediction)
         )
         connection.commit()
-
-ensure_webapp_response_table_exists()
