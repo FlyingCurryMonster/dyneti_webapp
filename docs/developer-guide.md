@@ -1,6 +1,7 @@
 # Developer Guide
 
-This guide is for developer support
+This guide is for developers who need to install, run, test, or modify the web
+app.
 
 ## Requirements
 
@@ -15,7 +16,8 @@ The Python dependencies are in `pyproject.toml`:
 - `pillow`
 - `tflite-runtime`
 
-`tflite-runtime` avoids downloading the entire `tensorflow` library into .venv, but it requires that `numpy<2`.
+`tflite-runtime` avoids downloading the full `tensorflow` library into `.venv`,
+but it requires `numpy<2`.
 
 ## Setup
 
@@ -25,9 +27,9 @@ To install the webapp run:
 ./install.sh
 ```
 
-It creates the  environment variable `RNB_WEBAPP_UV_CACHE_DIR` cache directory and installs the
-virtual environment with the `uv` package manager. By default,
-`RNB_WEBAPP_UV_CACHE_DIR` is `.uv-cache`.
+The install script creates the project-local uv cache directory and installs the
+virtual environment with the `uv` package manager. By default, the cache
+directory is `.uv-cache`.
 
 To run the webapp, run:
 
@@ -47,9 +49,12 @@ but the port and server can be configured in `config.toml`.
 
 Runtime settings live in `config.toml`.
 
-`backend.py` resolves these configs using `tomlib`.  The configurable settings include:
-- model_path
-- test_images directory
+`backend.py` resolves these configs using `tomllib`. The configurable settings
+include:
+
+- database path
+- model path
+- test images directory
 - host and port for the Flask server
 - debug mode for the Flask server
 - cat threshold for model prediction confidence
@@ -96,9 +101,16 @@ Renders the browser UI from `templates/index.html`.
 
 Returns a lightweight health check:
 
+```json
+{
+  "status": "ok"
+}
+```
+
 ### `POST /predict`
 
-Runs image inference and stores the result in SQLite table.
+Runs image inference and stores the result in the `webapp_response` SQLite
+table.
 
 The request must be `multipart/form-data` with a file field named `image`.
 
@@ -139,16 +151,21 @@ the browser camera flow.
 
 ## Prediction Logic
 
-The tflite model is a binary classifier trained on images of dogs and cats.
-We expect the model to have nearly determnistic prediction accuracy, so its necessary to use a threshold to filter out examples not seen in the training data.
-The app uses a threshold paramter, which requires the model to have at least 97.5% proability that the image is a cat or a dog.
+The TFLite model is a binary classifier trained on images of dogs and cats. The
+threshold is a confidence cutoff used to avoid confident-looking labels when the
+model output is ambiguous.
 
 The backend reads the threshold from `config.toml`:
 
 ```toml
 cat_threshold = 0.975
 ```
-If the threshold isn't reached the backend returns the message:
+
+With the current threshold, the backend returns:
+
+- `This is an image of a cat` when `cat_probability >= 0.975`
+- `This is an image of a dog` when `cat_probability < 0.025`
+- the uncertain message otherwise:
 
 ```text
 I can't tell if this image is a cat or a dog with high confidence
@@ -157,8 +174,9 @@ I can't tell if this image is a cat or a dog with high confidence
 ## ModelEngine
 
 `backend.py` reads the model path from `config.toml` and loads an instance of
-`ModelEngine`.  
-`ModelEngine` is a wrapper around the TFLite `Interpreter` that handles model loading, input preprocessing, and prediction.
+`ModelEngine`.
+`ModelEngine` is a wrapper around the TFLite `Interpreter` that handles model
+loading, input preprocessing, and prediction.
 
 ```python
 Interpreter(model_path=self.model_path)
@@ -170,11 +188,12 @@ Interpreter(model_path=self.model_path)
 - resizes the image to the model input height and width
 - converts it to the model input dtype
 - adds the batch dimension
-- rescales image values when `rescale=True`.  By default `rescale=True`.
+- rescales image values when `rescale=True`. By default `rescale=True`.
 
 The scaling value is inferred from the PIL Image object using `pil_scale_value`.
 
-`model_engine.py` can also be ran as a standalone script to check its outputs against the test images.
+`model_engine.py` can also be run as a standalone script to check its outputs
+against the test images.
 
 ## Database Contract
 
@@ -229,7 +248,9 @@ SELECT
 FROM webapp_response;
 ```
 
-`length(image)` is a quick way to confirm that image bytes were actually saved.  A tool like dbeaver is convenient to view the images.  Images are saved to the table upon prediction submission.
+`length(image)` is a quick way to confirm that image bytes were actually saved.
+A tool like DBeaver is convenient for viewing the saved rows and image BLOBs.
+Images are saved to the table when a prediction is submitted.
 
 ## Browser Flow
 
@@ -264,15 +285,15 @@ curl http://127.0.0.1:5000/test_model_engine
 Run the standalone model check:
 
 ```sh
-uv run python model_engine.py
+UV_CACHE_DIR=.uv-cache uv run python model_engine.py
 ```
 
 ## Troubleshooting
 
 ### `uv` cache is not writable
 
-The helper scripts should create the UV cache directory. They set `UV_CACHE_DIR` to a project-local cache by
-default:
+The helper scripts should create the uv cache directory. They set
+`UV_CACHE_DIR` to a project-local cache by default:
 
 ```sh
 ./install.sh
