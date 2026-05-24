@@ -8,9 +8,16 @@ const submitPhotoButton = document.getElementById("submit-photo");
 const statusText = document.getElementById("status");
 const predictionText = document.getElementById("prediction-text");
 const probabilityText = document.getElementById("probability-text");
+const feedbackBox = document.getElementById("feedback");
+const feedbackCorrectButton = document.getElementById("feedback-correct");
+const feedbackIncorrectButton = document.getElementById("feedback-incorrect");
+const labelFeedback = document.getElementById("label-feedback");
+const feedbackStatus = document.getElementById("feedback-status");
+const labelButtons = document.querySelectorAll(".label-button");
 
 let cameraStream = null;
 let capturedBlob = null;
+let currentPredictionId = null;
 
 function setStatus(message) {
   statusText.textContent = message;
@@ -24,6 +31,13 @@ function setResult(message, probability) {
   } else {
     probabilityText.textContent = "";
   }
+}
+
+function resetFeedback() {
+  currentPredictionId = null;
+  feedbackBox.hidden = true;
+  labelFeedback.hidden = true;
+  feedbackStatus.textContent = "";
 }
 
 async function startCamera() {
@@ -67,6 +81,7 @@ function capturePhoto() {
     submitPhotoButton.disabled = false;
     setStatus("Photo captured");
     setResult("Photo captured. Submit it for prediction.");
+    resetFeedback();
   }, "image/jpeg", 0.92);
 }
 
@@ -97,6 +112,8 @@ async function submitPhoto() {
 
     setStatus("Prediction complete");
     setResult(data.prediction, data.cat_probability);
+    currentPredictionId = data.id;
+    feedbackBox.hidden = false;
   } catch (error) {
     setStatus("Prediction failed");
     setResult(error.message);
@@ -105,6 +122,54 @@ async function submitPhoto() {
   }
 }
 
+async function submitFeedback(correct, userLabel) {
+  if (!currentPredictionId) {
+    feedbackStatus.textContent = "Submit a prediction before sending feedback.";
+    return;
+  }
+
+  const payload = {
+    id: currentPredictionId,
+    correct: correct,
+  };
+
+  if (!correct) {
+    payload.user_label = userLabel;
+  }
+
+  feedbackStatus.textContent = "Saving feedback...";
+
+  try {
+    const response = await fetch("/feedback", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Feedback request failed.");
+    }
+
+    labelFeedback.hidden = true;
+    feedbackStatus.textContent = "Feedback saved.";
+  } catch (error) {
+    feedbackStatus.textContent = error.message;
+  }
+}
+
 startCameraButton.addEventListener("click", startCamera);
 capturePhotoButton.addEventListener("click", capturePhoto);
 submitPhotoButton.addEventListener("click", submitPhoto);
+feedbackCorrectButton.addEventListener("click", () => submitFeedback(true));
+feedbackIncorrectButton.addEventListener("click", () => {
+  labelFeedback.hidden = false;
+  feedbackStatus.textContent = "";
+});
+
+labelButtons.forEach((button) => {
+  button.addEventListener("click", () => submitFeedback(false, button.dataset.label));
+});

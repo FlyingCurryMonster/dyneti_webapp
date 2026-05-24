@@ -4,7 +4,11 @@ import tomllib
 
 from flask import Flask, request, jsonify, render_template
 from model_engine import ModelEngine
-from webapp_db import ensure_webapp_response_table_exists, save_webapp_response
+from webapp_db import (
+    ensure_webapp_response_table_exists,
+    save_user_feedback,
+    save_webapp_response,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 
@@ -46,9 +50,58 @@ def predict():
     else:
         message = "I can't tell if this image is a cat or a dog with high confidence"
     
-    save_webapp_response(image_bytes, image.filename, image.content_type, cat_probability, message, DATABASE_PATH)
+    response_id = save_webapp_response(
+        image_bytes,
+        image.filename,
+        image.content_type,
+        cat_probability,
+        message,
+        DATABASE_PATH,
+    )
     
-    return jsonify({"cat_probability": float(output[0][0]), "prediction": message})
+    return jsonify({
+        "id": response_id,
+        "cat_probability": cat_probability,
+        "prediction": message,
+    })
+
+
+@app.route("/feedback", methods=["POST"])
+def feedback():
+    feedback_data = request.get_json(silent=True)
+
+    if feedback_data is None:
+        return jsonify({"error": "Request body must be JSON"}), 400
+
+    if "id" not in feedback_data:
+        return jsonify({"error": "Missing prediction id"}), 400
+
+    if "correct" not in feedback_data:
+        return jsonify({"error": "Missing correct field"}), 400
+
+    correct = feedback_data["correct"]
+    if not isinstance(correct, bool):
+        return jsonify({"error": "correct must be true or false"}), 400
+
+    user_label = feedback_data.get("user_label")
+    allowed_labels = {"cat", "dog", "neither"}
+
+    if correct:
+        user_label = None
+    elif user_label not in allowed_labels:
+        return jsonify({"error": "user_label must be cat, dog, or neither when correct is false"}), 400
+
+    rows_updated = save_user_feedback(
+        feedback_data["id"],
+        int(correct),
+        user_label,
+        DATABASE_PATH,
+    )
+
+    if rows_updated == 0:
+        return jsonify({"error": "Prediction id not found"}), 404
+
+    return jsonify({"status": "ok"})
 
 
 @app.route("/hello")

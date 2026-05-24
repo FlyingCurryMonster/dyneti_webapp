@@ -121,7 +121,8 @@ canvas {
   margin: 1rem 0;
 }
 
-.result-box {
+.result-box,
+.feedback-box {
   border-top: 1px solid #d8dee4;
   margin-top: 1rem;
   padding-top: 1rem;

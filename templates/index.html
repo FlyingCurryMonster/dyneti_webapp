@@ -40,6 +40,25 @@
         <p id="prediction-text">No prediction yet.</p>
         <p id="probability-text" class="probability-text"></p>
       </section>
+
+      <section id="feedback" class="feedback-box" hidden>
+        <h2>Was the prediction correct?</h2>
+        <div class="controls">
+          <button id="feedback-correct" type="button">Yes</button>
+          <button id="feedback-incorrect" type="button">No</button>
+        </div>
+
+        <div id="label-feedback" hidden>
+          <p class="subtitle">What was in the image?</p>
+          <div class="controls">
+            <button class="label-button" type="button" data-label="cat">Cat</button>
+            <button class="label-button" type="button" data-label="dog">Dog</button>
+            <button class="label-button" type="button" data-label="neither">Neither</button>
+          </div>
+        </div>
+
+        <p id="feedback-status" class="probability-text"></p>
+      </section>
     </section>
   </main>
 
