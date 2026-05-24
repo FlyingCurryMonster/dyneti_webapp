@@ -52,7 +52,7 @@ category:
 
 The feedback is saved to the same database row as the original prediction. If
 you change your mind and select another feedback option, the app modifies the
-same row inplace rather than creating a duplicate prediction.
+same row in place rather than creating a duplicate prediction.
 
 ## Data And Privacy
 
