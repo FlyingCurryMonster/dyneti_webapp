@@ -4,8 +4,22 @@ This web app allows you to take a photo of your pet with your webcam and ask
 an ML model if it's a cat or dog.
 If the model does not have enough confidence, it will say it is unsure.
 
+## Installation instructions
 
-## Instructions
+To install the webapp run:
+
+```sh
+./install.sh
+```
+
+To run the webapp, run:
+
+```sh
+./start_app.sh
+
+For more details please refer to the setup section in the developer guide.
+
+## Webapp Usage Instructions
 
 1. After the web app is running, open `http://127.0.0.1:5000` in your browser.
 2. Select **Start camera**.
