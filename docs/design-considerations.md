@@ -25,21 +25,5 @@
 
 
 ## Model hot swapping and production readiness
-- We should ideally be able to swap out models while the app is running.  We already have test images for the model to handle.
-- But being able to hot swap models without restarting the server would be ideal.
+- We should ideally be able to swap out models while the app is running. But being able to hot swap models without restarting the server would be nice to have.
 
-# implementation methodology outline
-- modular design with seperate files for flask backend, html/js frontend, model_engine, and database interface:
-- venv with uv package manager and local uv cache, used the tflite_runtime to avoid downloading the full tensorflow library
-- config.toml instead of os variables
-- image rescaling using PIL image type
-- static confidence threshold for uncertain predictions
-
-
-# Future implemntation ideas outline
-- i would create a seperate table that has deduplicated training examples.  We'd need to attach a user id/session id to each image and check that images are the same.
-- one way to do this in post is to filter similar images, we can use a PCA to filter for similar images.
-- once we have a deduplicated table, we should use that for online learning.  we should estimate our test error with out of sample images, and calibrate our confidence threshold accordingly, since we expect deterministic outputs.
-- every so often we should retrain the model on new examples collected in the deduplicated table
-- we need to build a way to refresh the model in memory so that we can hot swap models.  we already have a few tests but the hot swapping isn't robust because we don't have multiple model objects to test on
-- production readiness with a WSGI server?
