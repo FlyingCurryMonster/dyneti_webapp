@@ -124,10 +124,14 @@ Successful response shape:
 
 ```json
 {
+  "id": 1,
   "cat_probability": 0.98,
   "prediction": "This is an image of a cat"
 }
 ```
+
+The `id` is the primary key of the saved `webapp_response` row. The frontend
+uses this id when it submits user feedback.
 
 If the request does not include an `image` file, the endpoint returns HTTP 400:
 
@@ -136,6 +140,52 @@ If the request does not include an `image` file, the endpoint returns HTTP 400:
   "error": "No image file provided"
 }
 ```
+
+### `POST /feedback`
+
+Stores user feedback for an existing prediction row.
+
+The request body must be JSON. If the model prediction was correct:
+
+```json
+{
+  "id": 1,
+  "correct": true
+}
+```
+
+If the model prediction was incorrect, `user_label` is required and must be one
+of `cat`, `dog`, or `neither`:
+
+```json
+{
+  "id": 1,
+  "correct": false,
+  "user_label": "dog"
+}
+```
+If the user does not include the user_label on an incorrect prediction, "correct" is not marked.
+
+Successful response shape:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+The endpoint updates the existing prediction row in place. Repeated feedback for
+the same prediction id overwrites `user_feedback_correct`, `user_label`, and
+`feedback_submitted_at` on that row.
+
+Validation behavior:
+
+- missing JSON body: HTTP 400
+- missing `id`: HTTP 400
+- missing `correct`: HTTP 400
+- non-boolean `correct`: HTTP 400
+- `correct: false` without a valid `user_label`: HTTP 400
+- unknown prediction id: HTTP 404
 
 ### `GET /test_model_engine`
 
@@ -221,7 +271,10 @@ CREATE TABLE IF NOT EXISTS webapp_response (
     content_type TEXT,
     cat_probability REAL NOT NULL,
     prediction TEXT NOT NULL,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    user_feedback_correct INTEGER,
+    user_label TEXT,
+    feedback_submitted_at TEXT
 );
 ```
 
@@ -234,6 +287,16 @@ Each successful prediction saves:
 - prediction message
 - creation timestamp
 
+Feedback fields are nullable because a prediction can be saved before the user
+answers the feedback prompt:
+
+- `user_feedback_correct`: `1` if the user said the prediction was correct, `0`
+  if the user said it was incorrect, and `NULL` if no feedback has been submitted
+- `user_label`: one of `cat`, `dog`, or `neither` when the prediction was marked
+  incorrect; otherwise `NULL`
+- `feedback_submitted_at`: timestamp for the latest feedback submission, or
+  `NULL` if no feedback has been submitted
+
 Useful verification query:
 
 ```sql
@@ -244,7 +307,10 @@ SELECT
     length(image),
     cat_probability,
     prediction,
-    created_at
+    created_at,
+    user_feedback_correct,
+    user_label,
+    feedback_submitted_at
 FROM webapp_response;
 ```
 
@@ -260,7 +326,13 @@ The frontend flow is implemented in `static/app.js`:
 2. The camera frame is drawn into a canvas.
 3. The canvas is converted to a JPEG blob.
 4. The blob is sent to `/predict` as `FormData` with field name `image`.
-5. The JSON response updates the prediction display.
+5. The JSON response updates the prediction display and stores the returned
+   prediction id in browser state.
+6. The page asks the user whether the prediction was correct.
+7. If the prediction was incorrect, the page asks whether the true label was
+   `cat`, `dog`, or `neither`.
+8. The feedback is sent to `/feedback` as JSON and updates the same database
+   row created by `/predict`.
 
 ## Local Smoke Checks
 
@@ -274,6 +346,16 @@ Check prediction without the browser:
 
 ```sh
 curl -X POST -F "image=@test_images/cat.jpg" http://127.0.0.1:5000/predict
+```
+
+Check feedback without the browser, replacing `1` with an id returned from
+`/predict`:
+
+```sh
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"id": 1, "correct": false, "user_label": "dog"}' \
+  http://127.0.0.1:5000/feedback
 ```
 
 Check sample model outputs:

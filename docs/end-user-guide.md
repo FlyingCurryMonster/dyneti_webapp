@@ -16,6 +16,7 @@ To run the webapp, run:
 
 ```sh
 ./start_app.sh
+```
 
 For more details please refer to the setup section in the developer guide.
 
@@ -28,6 +29,7 @@ For more details please refer to the setup section in the developer guide.
 5. Select **Capture photo**.
 6. Review the captured photo preview.
 7. Select **Submit prediction**.
+8. After the result appears, answer whether the prediction was correct.
 
 The possible outputs are:
 
@@ -35,6 +37,22 @@ The possible outputs are:
 - `This is an image of a dog`
 - `I can't tell if this image is a cat or a dog with high confidence`
 
+## Providing Feedback
+
+After the prediction appears, the app asks whether the result was correct.
+
+If the prediction is correct, select **Yes**.
+
+If the prediction is not correct, select **No**, then choose the correct image
+category:
+
+- **Cat**
+- **Dog**
+- **Neither**
+
+The feedback is saved to the same database row as the original prediction. If
+you change your mind and select another feedback option, the app modifies the
+same row inplace rather than creating a duplicate prediction.
 
 ## Data And Privacy
 
@@ -42,7 +60,8 @@ This app saves each submitted image and prediction result in a local SQLite
 database on the machine running the app.
 
 Saved data includes the image, filename, content type, cat probability,
-prediction message, and timestamp.
+prediction message, prediction timestamp, user feedback, user-provided label
+if the prediction was incorrect, and feedback timestamp.
 
 ## Troubleshooting
 
