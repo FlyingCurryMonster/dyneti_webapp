@@ -47,7 +47,7 @@ class ModelEngine:
             if img.mode == "1":
                 return 1.0
             if img.mode == "F":
-                return None  # already float-ish; don't know intended scale
+                raise ValueError("Image mode 'F' is already float; cannot determine intended scale for rescaling")
             raise ValueError(f"Unsupported image mode: {img.mode}")
 
         img = Image.open(img_path).resize(self.input_img_shape)
