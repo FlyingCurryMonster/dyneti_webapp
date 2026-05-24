@@ -55,5 +55,5 @@ test_images/           Sample images for local checks
 
 The app currently classifies webcam images as cat, dog, or uncertain. It is a
 local development app, not a production deployment. Captured images and
-prediction outputs with user feedback are saved in `instance/webapp.sqlite` on the machine running
-the app.
+prediction outputs with user feedback are saved in `instance/webapp.sqlite` on
+the machine running the app.
