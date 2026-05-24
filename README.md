@@ -7,6 +7,13 @@ stored in a local SQLite database with the uploaded image bytes and model output
 
 ## Quick Start
 
+Clone the source code and enter the project directory:
+
+```sh
+git clone https://github.com/FlyingCurryMonster/dyneti_webapp.git
+cd dyneti_webapp
+```
+
 Install the project dependencies:
 
 ```sh

@@ -21,6 +21,13 @@ but it requires `numpy<2`.
 
 ## Setup
 
+Clone the source code and enter the project directory:
+
+```sh
+git clone https://github.com/FlyingCurryMonster/dyneti_webapp.git
+cd dyneti_webapp
+```
+
 To install the webapp run:
 
 ```sh

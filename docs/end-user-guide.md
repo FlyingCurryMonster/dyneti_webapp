@@ -6,6 +6,13 @@ If the model does not have enough confidence, it will say it is unsure.
 
 ## Installation instructions
 
+First, clone the source code and enter the project directory:
+
+```sh
+git clone https://github.com/FlyingCurryMonster/dyneti_webapp.git
+cd dyneti_webapp
+```
+
 To install the webapp run:
 
 ```sh
